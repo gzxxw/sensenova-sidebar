@@ -1,0 +1,30 @@
+{
+  "schema_version": 1,
+  "toolpkg_id": "com.operit.sensenova_sidebar",
+  "version": "0.1.0",
+  "api_version": "1.0.0",
+  "main": "dist/main.js",
+  "display_name": {
+    "zh": "商汤生图",
+    "en": "SenseNova Draw"
+  },
+  "description": {
+    "zh": "侧边栏商汤生图插件：配置 API Key 后可按文字生成图片、选择本地图片进行 AI 编辑，生成结果支持预览并一键发送到聊天。",
+    "en": "Sidebar SenseNova image plugin: configure an API key, generate images from text, edit local images with AI, preview results and send to chat."
+  },
+  "enabled_by_default": true,
+  "subpackages": [
+    {
+      "id": "sensenova_sidebar",
+      "entry": "dist/packages/sensenova_sidebar.js",
+      "display_name": {
+        "zh": "商汤生图工具",
+        "en": "SenseNova Draw Tools"
+      },
+      "description": {
+        "zh": "调用商汤 SenseNova 文生图与图生图编辑接口，保存到本地并以 Markdown 图片提示返回。",
+        "en": "Call SenseNova text-to-image and image-edit APIs, save locally, and return a Markdown image reference."
+      }
+    }
+  ]
+}
