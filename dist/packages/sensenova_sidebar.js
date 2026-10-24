@@ -1,14 +1,13 @@
 /* METADATA
 {
   "name": "sensenova_sidebar",
-
   "display_name": {
-      "zh": "商汤生图工具",
-      "en": "SenseNova Draw Tools"
+    "zh": "商汤生图工具",
+    "en": "SenseNova Draw Tools"
   },
   "description": {
-      "zh": "调用商汤 SenseNova 接口进行文生图与图生图编辑（sensenova-u1.5-lite），支持配置 API Key，图片保存到本地并返回 Markdown 图片提示，供侧边栏预览与发送。",
-      "en": "Generate and edit images via SenseNova APIs (sensenova-u1.5-lite). Configure an API key, save images locally, and return Markdown image references for sidebar preview and sending."
+    "zh": "调用商汤 SenseNova 接口进行文生图与图生图编辑（sensenova-u1.5-lite），支持配置 API Key，图片保存到本地并返回 Markdown 图片提示，供侧边栏预览与发送。",
+    "en": "Generate and edit images via SenseNova APIs (sensenova-u1.5-lite). Configure an API key, save images locally, and return Markdown image references for sidebar preview and sending."
   },
   "env": [
     {
@@ -29,12 +28,60 @@
         "en": "Generate an image via SenseNova text-to-image API using a prompt, save it locally, and return a Markdown image reference."
       },
       "parameters": [
-        { "name": "prompt", "description": { "zh": "绘图提示词（英文或中文皆可）", "en": "Prompt for image generation (Chinese or English)" }, "type": "string", "required": true },
-        { "name": "negative_prompt", "description": { "zh": "负面提示词（可选）", "en": "Negative prompt (optional)" }, "type": "string", "required": false },
-        { "name": "aspect_ratio", "description": { "zh": "输出比例，如 '1:1', '16:9', '9:16'（可选，默认 1:1）", "en": "Aspect ratio, e.g. '1:1', '16:9', '9:16' (optional; default 1:1)" }, "type": "string", "required": false },
-        { "name": "image_size", "description": { "zh": "输出分辨率档位：1K / 2K / 4K（可选，默认 2K；仅 u1.5-lite 支持 4K）", "en": "Image size tier: 1K / 2K / 4K (optional; default 2K; 4K requires u1.5-lite)" }, "type": "string", "required": false },
-        { "name": "model", "description": { "zh": "模型名（可选，默认 sensenova-u1.5-lite）", "en": "Model name (optional; default sensenova-u1.5-lite)" }, "type": "string", "required": false },
-        { "name": "file_name", "description": { "zh": "自定义保存到本地的文件名（不含路径和扩展名）", "en": "Custom output file name (without path or extension)" }, "type": "string", "required": false }
+        {
+          "name": "prompt",
+          "description": {
+            "zh": "绘图提示词（英文或中文皆可）",
+            "en": "Prompt for image generation (Chinese or English)"
+          },
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "negative_prompt",
+          "description": {
+            "zh": "负面提示词（可选）",
+            "en": "Negative prompt (optional)"
+          },
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "aspect_ratio",
+          "description": {
+            "zh": "输出比例，如 '1:1', '16:9', '9:16'（可选，默认 1:1）",
+            "en": "Aspect ratio, e.g. '1:1', '16:9', '9:16' (optional; default 1:1)"
+          },
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "image_size",
+          "description": {
+            "zh": "输出分辨率档位：1K / 2K / 4K（可选，默认 2K；仅 u1.5-lite 支持 4K）",
+            "en": "Image size tier: 1K / 2K / 4K (optional; default 2K; 4K requires u1.5-lite)"
+          },
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "model",
+          "description": {
+            "zh": "模型名（可选，默认 sensenova-u1.5-lite）",
+            "en": "Model name (optional; default sensenova-u1.5-lite)"
+          },
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "file_name",
+          "description": {
+            "zh": "自定义保存到本地的文件名（不含路径和扩展名）",
+            "en": "Custom output file name (without path or extension)"
+          },
+          "type": "string",
+          "required": false
+        }
       ]
     },
     {
@@ -44,10 +91,42 @@
         "en": "Edit a local image via SenseNova image-edit API (background/style/element changes), save the result, and return a Markdown image reference."
       },
       "parameters": [
-        { "name": "prompt", "description": { "zh": "编辑指令，描述要如何修改图片", "en": "Edit instruction describing how to modify the image" }, "type": "string", "required": true },
-        { "name": "image_path", "description": { "zh": "本地图片路径（必填）", "en": "Local image file path (required)" }, "type": "string", "required": true },
-        { "name": "model", "description": { "zh": "模型名（可选，编辑固定要求 sensenova-u1.5-lite）", "en": "Model name (optional; editing requires sensenova-u1.5-lite)" }, "type": "string", "required": false },
-        { "name": "file_name", "description": { "zh": "自定义保存到本地的文件名（不含路径和扩展名）", "en": "Custom output file name (without path or extension)" }, "type": "string", "required": false }
+        {
+          "name": "prompt",
+          "description": {
+            "zh": "编辑指令，描述要如何修改图片",
+            "en": "Edit instruction describing how to modify the image"
+          },
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "image_path",
+          "description": {
+            "zh": "本地图片路径（必填）",
+            "en": "Local image file path (required)"
+          },
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "model",
+          "description": {
+            "zh": "模型名（可选，编辑固定要求 sensenova-u1.5-lite）",
+            "en": "Model name (optional; editing requires sensenova-u1.5-lite)"
+          },
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "file_name",
+          "description": {
+            "zh": "自定义保存到本地的文件名（不含路径和扩展名）",
+            "en": "Custom output file name (without path or extension)"
+          },
+          "type": "string",
+          "required": false
+        }
       ]
     },
     {
@@ -57,9 +136,33 @@
         "en": "Save SenseNova API key and other config to the plugin local config file."
       },
       "parameters": [
-        { "name": "api_key", "description": { "zh": "商汤 SenseNova API Key", "en": "SenseNova API key" }, "type": "string", "required": true },
-        { "name": "base_url", "description": { "zh": "API Base URL（可选，默认 https://token.sensenova.cn/v1）", "en": "API base URL (optional; default https://token.sensenova.cn/v1)" }, "type": "string", "required": false },
-        { "name": "model", "description": { "zh": "默认模型（可选，默认 sensenova-u1.5-lite）", "en": "Default model (optional; default sensenova-u1.5-lite)" }, "type": "string", "required": false }
+        {
+          "name": "api_key",
+          "description": {
+            "zh": "商汤 SenseNova API Key",
+            "en": "SenseNova API key"
+          },
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "base_url",
+          "description": {
+            "zh": "API Base URL（可选，默认 https://token.sensenova.cn/v1）",
+            "en": "API base URL (optional; default https://token.sensenova.cn/v1)"
+          },
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "model",
+          "description": {
+            "zh": "默认模型（可选，默认 sensenova-u1.5-lite）",
+            "en": "Default model (optional; default sensenova-u1.5-lite)"
+          },
+          "type": "string",
+          "required": false
+        }
       ]
     },
     {
@@ -85,22 +188,101 @@
         "en": "Send an image to the current chat as a Markdown image reference."
       },
       "parameters": [
-        { "name": "markdown", "description": { "zh": "Markdown 图片引用，如 ![图片](file:///path.png)", "en": "Markdown image reference" }, "type": "string", "required": true },
-        { "name": "file_path", "description": { "zh": "图片本地路径（可选）", "en": "Local image path (optional)" }, "type": "string", "required": false }
+        {
+          "name": "markdown",
+          "description": {
+            "zh": "Markdown 图片引用，如 ![图片](file:///path.png)",
+            "en": "Markdown image reference"
+          },
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "file_path",
+          "description": {
+            "zh": "图片本地路径（可选）",
+            "en": "Local image path (optional)"
+          },
+          "type": "string",
+          "required": false
+        }
       ]
     },
     {
-      "name": "start_service",
+      "name": "submit_generate",
       "description": {
-        "zh": "启动/检查商汤生图本地 Python 服务（供侧边栏 WebView 加载，突破 15 秒限制）。幂等：已在运行则直接返回。",
-        "en": "Start/check the SenseNova local Python service (for sidebar WebView, bypass 15s limit). Idempotent: returns ok if already running."
+        "zh": "提交商汤生图/图生图编辑后台任务，立即返回任务ID（不阻塞UI，突破15秒限制），完成状态用 task_status 查询。",
+        "en": "Submit a SenseNova generate/edit background task, returns a task ID immediately (non-blocking, bypasses 15s limit). Check status via task_status."
       },
       "parameters": [
-        { "name": "port", "description": { "zh": "服务端口（可选，默认 8899）", "en": "Service port (optional, default 8899)" }, "type": "number", "required": false }
+        {
+          "name": "prompt",
+          "description": {
+            "zh": "提示词或编辑指令",
+            "en": "Prompt or edit instruction"
+          },
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "image_path",
+          "description": {
+            "zh": "图生图时的本地图片路径（可选）",
+            "en": "Local image path for image-edit (optional)"
+          },
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "model",
+          "description": {
+            "zh": "模型名（可选）",
+            "en": "Model name (optional)"
+          },
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "image_size",
+          "description": {
+            "zh": "分辨率档位 1K/2K/4K（可选）",
+            "en": "Size tier 1K/2K/4K (optional)"
+          },
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "file_name",
+          "description": {
+            "zh": "自定义保存文件名（不含路径和扩展名）",
+            "en": "Custom output file name"
+          },
+          "type": "string",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "task_status",
+      "description": {
+        "zh": "查询后台生图任务状态，返回任务详情和最近结果。",
+        "en": "Query a background generate task status, returns task detail and recent results."
+      },
+      "parameters": [
+        {
+          "name": "task_id",
+          "description": {
+            "zh": "任务ID",
+            "en": "Task ID"
+          },
+          "type": "string",
+          "required": false
+        }
       ]
     }
   ]
-}*/
+}
+*/
 const sensenovaSidebar = (function () {
     const HTTP_TIMEOUT_MS = 600000;
     const DEFAULT_BASE_URL = "https://token.sensenova.cn/v1";
@@ -182,7 +364,7 @@ const sensenovaSidebar = (function () {
         for (const p of CONFIG_CANDIDATES) {
             try {
                 const result = await Tools.Files.read(p);
-                if (result.successful && result.content) {
+                if (result && typeof result.content === "string" && result.content.trim().length > 0) {
                     const parsed = JSON.parse(result.content);
                     if (isRecord(parsed) && ((parsed.api_key || "").trim() || (parsed.model || "").trim())) {
                         return parsed;
@@ -204,7 +386,7 @@ const sensenovaSidebar = (function () {
         for (const p of targets) {
             try {
                 const result = await Tools.Files.write(p, content, false);
-                if (!result.successful) lastError = result.details || lastError;
+                if (!result || !result.successful) lastError = (result && result.details) || lastError;
             } catch (e) {
                 lastError = getErrorMessage(e);
             }
@@ -359,11 +541,11 @@ const sensenovaSidebar = (function () {
             throw new Error(`商汤图生图编辑要求模型 ${EDIT_REQUIRED_MODEL}，当前为 ${model}。`);
         }
         const binResult = await Tools.Files.readBinary(imagePath);
-        if (!binResult.successful || !binResult.base64) {
+        if (!binResult || !binResult.contentBase64) {
             throw new Error(`读取本地图片失败: ${binResult.details || "未知错误"}`);
         }
         const mime = binResult.mimeType || "image/png";
-        const dataUrl = fileToDataUrl(binResult.base64, mime);
+        const dataUrl = fileToDataUrl(binResult.contentBase64, mime);
         const body = {
             model,
             images: [{ image_url: dataUrl }],
@@ -455,7 +637,7 @@ const sensenovaSidebar = (function () {
         await ensureDirectories();
         try {
             const listing = await Tools.Files.list(DRAWS_DIR);
-            if (!listing.successful || !listing.entries) {
+            if (!listing || !Array.isArray(listing.entries)) {
                 return { files: [] };
             }
             const imageEntries = listing.entries
@@ -491,36 +673,54 @@ const sensenovaSidebar = (function () {
             return { success: true, message: "请在聊天中粘贴以下 Markdown 以展示图片", markdown, sent: false };
         }
     }
-    async function start_service(params) {
-        params = params || {};
-        const port = params.port || 8899;
-        let sid = "";
+
+    // ---- 后台任务（fire-and-forget，突破 UI 15s 限制）----
+    const TASKS_FILE = STORAGE_DIR + "/tasks.json";
+    async function readTasks() {
         try {
-            const sess = await Tools.System.terminal.create("sensenova_svc");
-            sid = sess && (sess.sessionId || sess.id) ? String(sess.sessionId || sess.id) : "";
-        } catch (e) { console.warn("start_service create:", getErrorMessage(e)); }
-        // 幂等检查
-        if (sid) {
-            try {
-                const check = await Tools.System.terminal.exec(sid, "curl -s -o /dev/null -w '%{http_code}' http://127.0.0.1:" + port + "/api/config || echo 'DOWN'", 8000);
-                const out = String(check && check.output || "");
-                if (out.indexOf("200") >= 0) {
-                    return { ok: true, message: "服务已在运行", port: port };
-                }
-            } catch (e) { console.warn("start_service check:", getErrorMessage(e)); }
-        }
-        // 启动
-        try {
-            const cmd = "cd /sdcard/Download/Operit/dev_package/com.operit.sensenova_sidebar && (setsid nohup python3 server.py " + port + " >/tmp/snserver.log 2>&1 &) && sleep 2 && curl -s -o /dev/null -w '%{http_code}' http://127.0.0.1:" + port + "/api/config";
-            const r = await Tools.System.terminal.exec(sid, cmd, 15000);
-            const out = String(r && r.output || "");
-            if (out.indexOf("200") >= 0) {
-                return { ok: true, message: "服务已启动", port: port };
+            const r = await Tools.Files.read(TASKS_FILE);
+            if (r && typeof r.content === "string" && r.content.trim().length > 0) {
+                const p = JSON.parse(r.content);
+                if (p && typeof p === "object") return p;
             }
-            return { ok: false, error: "服务启动失败: " + out };
-        } catch (e) {
-            return { ok: false, error: "启动异常: " + getErrorMessage(e) };
-        }
+        } catch (e) {}
+        return { seq: 0, tasks: {}, results: [] };
+    }
+    async function writeTasks(t) { try { await Tools.Files.write(TASKS_FILE, JSON.stringify(t), false); } catch (e) {} }
+    async function submit_generate(params) {
+        params = params || {};
+        if (!params.prompt || params.prompt.trim().length === 0) throw new Error("参数 prompt 不能为空。");
+        const tasks = await readTasks();
+        const id = "t" + (++tasks.seq);
+        const task = { id: id, prompt: params.prompt.trim(), image_path: params.image_path || "", model: params.model || "", image_size: params.image_size || "", status: "running", created: Date.now(), result: null, error: null };
+        tasks.tasks[id] = task;
+        await writeTasks(tasks);
+        const runParams = Object.assign({}, params);
+        (async function () {
+            let finalResult = null;
+            let finalError = null;
+            try {
+                finalResult = runParams.image_path ? await edit_image(runParams) : await generate_image(runParams);
+            } catch (e) { finalError = getErrorMessage(e); }
+            try {
+                const t = await readTasks();
+                const tk = t.tasks[id];
+                if (tk) {
+                    tk.status = finalError ? "error" : "done";
+                    tk.finished = Date.now();
+                    if (finalResult) { tk.result = finalResult; t.results.unshift(finalResult); t.results = t.results.slice(0, 50); }
+                    else { tk.error = finalError; }
+                }
+                await writeTasks(t);
+            } catch (e) {}
+        })();
+        return { success: true, task_id: id, status: "running" };
+    }
+    async function task_status(params) {
+        const taskId = params && params.task_id;
+        const t = await readTasks();
+        const tk = taskId ? (t.tasks || {})[taskId] : null;
+        return { success: true, task: tk || null, recent: t.results || [] };
     }
     function wrapper(fn) {
         return async function (params) {
@@ -539,15 +739,17 @@ const sensenovaSidebar = (function () {
         edit_image: wrapper(edit_image),
         save_config: wrapper(save_config),
         load_config: wrapper(load_config),
-        start_service: wrapper(start_service),
         list_draws: wrapper(list_draws),
         send_to_chat: wrapper(send_to_chat),
+        submit_generate: wrapper(submit_generate),
+        task_status: wrapper(task_status),
     };
 })();
 exports.generate_image = sensenovaSidebar.generate_image;
 exports.edit_image = sensenovaSidebar.edit_image;
 exports.save_config = sensenovaSidebar.save_config;
 exports.load_config = sensenovaSidebar.load_config;
-exports.start_service = sensenovaSidebar.start_service;
 exports.list_draws = sensenovaSidebar.list_draws;
 exports.send_to_chat = sensenovaSidebar.send_to_chat;
+exports.submit_generate = sensenovaSidebar.submit_generate;
+exports.task_status = sensenovaSidebar.task_status;

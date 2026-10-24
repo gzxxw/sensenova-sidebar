@@ -69,6 +69,29 @@ function guessExtensionFromUrl(url) {
   if (match && match[1]) return match[1].toLowerCase();
   return "png";
 }
+function sleepMs(ms) { return new Promise(function (r) { setTimeout(r, ms); }); }
+async function httpExecuteWithRetry(request, retries, label) {
+  retries = retries || 3;
+  let lastResp = null;
+  for (let attempt = 0; attempt <= retries; attempt++) {
+    const resp = await request.build().execute();
+    if (resp.isSuccessful()) return resp;
+    const code = resp.statusCode;
+    // 429 限流 / 5xx 服务端错误 -> 等待后重试
+    if (code === 429 || (code >= 500 && code <= 599) || code === 408) {
+      lastResp = resp;
+      if (attempt < retries) {
+        const wait = 20000 * (attempt + 1);
+        console.warn(label + " HTTP " + code + "，等待 " + wait + "ms 后重试 (" + (attempt + 1) + "/" + retries + ")");
+        await sleepMs(wait);
+        continue;
+      }
+    }
+    return resp;
+  }
+  return lastResp;
+}
+
 function fileToDataUrl(base64, mime) {
   return "data:" + (mime || "image/png") + ";base64," + base64;
 }
@@ -106,7 +129,7 @@ async function readConfig() {
   for (const p of CONFIG_CANDIDATES) {
     try {
       const result = await Tools.Files.read(p);
-      if (result.successful && result.content) {
+      if (result && typeof result.content === "string" && result.content.trim().length > 0) {
         const parsed = JSON.parse(result.content);
         if (isRecord(parsed) && ((parsed.api_key || "").trim() || (parsed.model || "").trim())) {
           console.warn("readConfig HIT:", p);
@@ -129,7 +152,7 @@ async function writeConfig(config) {
   for (const p of targets) {
     try {
       const result = await Tools.Files.write(p, content, false);
-      if (!result.successful) lastError = result.details || lastError;
+      if (!result || !result.successful) lastError = (result && result.details) || lastError;
     } catch (e) { lastError = getErrorMessage(e); }
   }
   return { successful: true, lastError: lastError };
@@ -189,7 +212,7 @@ async function generateImage(params) {
   };
   const request = client.newRequest().url(joinUrl(DEFAULT_BASE_URL, GEN_ENDPOINT))
     .method("POST").headers(headers).body(JSON.stringify(body), "json");
-  const response = await request.build().execute();
+  const response = await httpExecuteWithRetry(request, 3, "商汤文生图");
   if (!response.isSuccessful()) throw new Error("商汤文生图失败: HTTP " + response.statusCode + " - " + response.content);
   let parsed;
   try { parsed = JSON.parse(response.content); } catch (e) { throw new Error("解析商汤文生图响应失败: " + getErrorMessage(e)); }
@@ -215,10 +238,10 @@ async function editImage(params) {
   let model = (params.model || "").trim() || EDIT_REQUIRED_MODEL;
   if (model.toLowerCase() !== EDIT_REQUIRED_MODEL) throw new Error("商汤图生图编辑要求模型 " + EDIT_REQUIRED_MODEL + "，当前为 " + model + "。");
   const bin = await Tools.Files.readBinary(imagePath);
-  if (!bin.successful || !bin.base64) throw new Error("读取本地图片失败: " + (bin.details || "未知错误"));
+  if (!bin || !bin.contentBase64) throw new Error("读取本地图片失败: " + ((bin && bin.details) || "未知错误"));
   const body = {
     model,
-    images: [{ image_url: fileToDataUrl(bin.base64, bin.mimeType || "image/png") }],
+    images: [{ image_url: fileToDataUrl(bin.contentBase64, (bin.mimeType || "image/png")) }],
     prompt, n: 1, size: "auto", watermark: false, prompt_extend: true, response_format: "url",
   };
   const headers = {
@@ -227,7 +250,7 @@ async function editImage(params) {
   };
   const request = client.newRequest().url(joinUrl(DEFAULT_BASE_URL, EDIT_ENDPOINT))
     .method("POST").headers(headers).body(JSON.stringify(body), "json");
-  const response = await request.build().execute();
+  const response = await httpExecuteWithRetry(request, 3, "商汤图生图编辑");
   if (!response.isSuccessful()) throw new Error("商汤图生图编辑失败: HTTP " + response.statusCode + " - " + response.content);
   let parsed;
   try { parsed = JSON.parse(response.content); } catch (e) { throw new Error("解析商汤编辑响应失败: " + getErrorMessage(e)); }
@@ -273,7 +296,7 @@ async function listDraws() {
   await ensureDirectories();
   try {
     const listing = await Tools.Files.list(DRAWS_DIR);
-    if (!listing.successful || !listing.entries) return { files: [] };
+    if (!listing || !Array.isArray(listing.entries)) return { files: [] };
     const files = listing.entries
       .filter(function (e) { return !e.isDirectory && /\.(png|jpg|jpeg|webp|gif)$/i.test(e.name); })
       .map(function (e) {
@@ -299,39 +322,52 @@ async function sendToChat(params) {
   }
 }
 
-async function startService(params) {
-  params = params || {};
-  const port = params.port || 8899;
-  let sid = "";
-  // 创建/复用终端会话
+// ---- 后台任务（fire-and-forget，突破 UI 15s 限制）----
+const TASKS_FILE = STORAGE_DIR + "/tasks.json";
+async function readTasks() {
   try {
-    const sess = await Tools.System.terminal.create("sensenova_svc");
-    sid = sess && (sess.sessionId || sess.id) ? String(sess.sessionId || sess.id) : "";
-  } catch (e) { console.warn("startService create session:", getErrorMessage(e)); }
-  // 幂等：先检查端口是否已在服务
-  if (sid) {
-    try {
-      const check = await Tools.System.terminal.exec(sid, "curl -s -o /dev/null -w '%{http_code}' http://127.0.0.1:" + port + "/api/config || echo 'DOWN'", 8000);
-      const out = String(check && check.output || "");
-      if (out.indexOf("200") >= 0) {
-        return { success: true, ok: true, message: "服务已在运行", port: port };
-      }
-    } catch (e) { console.warn("startService check:", getErrorMessage(e)); }
-  }
-  // 启动服务（后台脱离 terminal 生命周期）
-  try {
-    const cmd = "cd /sdcard/Download/Operit/dev_package/com.operit.sensenova_sidebar && (setsid nohup python3 server.py " + port + " >/tmp/snserver.log 2>&1 &) && sleep 2 && curl -s -o /dev/null -w '%{http_code}' http://127.0.0.1:" + port + "/api/config";
-    const r = await Tools.System.terminal.exec(sid, cmd, 15000);
-    const out = String(r && r.output || "");
-    if (out.indexOf("200") >= 0) {
-      return { success: true, ok: true, message: "服务已启动", port: port };
+    const r = await Tools.Files.read(TASKS_FILE);
+    if (r && typeof r.content === "string" && r.content.trim().length > 0) {
+      const p = JSON.parse(r.content);
+      if (p && typeof p === "object") return p;
     }
-    return { success: false, ok: false, error: "服务启动失败: " + out, output: out };
-  } catch (e) {
-    return { success: false, ok: false, error: "启动异常: " + getErrorMessage(e) };
-  }
+  } catch (e) {}
+  return { seq: 0, tasks: {}, results: [] };
 }
-
+async function writeTasks(t) { try { await Tools.Files.write(TASKS_FILE, JSON.stringify(t), false); } catch (e) {} }
+async function submitGenerate(params) {
+  params = params || {};
+  if (!params.prompt || params.prompt.trim().length === 0) throw new Error("参数 prompt 不能为空。");
+  const tasks = await readTasks();
+  const id = "t" + (++tasks.seq);
+  const task = { id: id, prompt: params.prompt.trim(), image_path: params.image_path || "", model: params.model || "", image_size: params.image_size || "", status: "running", created: Date.now(), result: null, error: null };
+  tasks.tasks[id] = task;
+  await writeTasks(tasks);
+  // fire-and-forget：立即返回，后台执行完整生图（可超过 15s）
+  (async function () {
+    let finalResult = null;
+    let finalError = null;
+    try { finalResult = await generateImage(params); }
+    catch (e) { finalError = getErrorMessage(e); }
+    try {
+      const t = await readTasks();
+      const tk = t.tasks[id];
+      if (tk) {
+        tk.status = finalError ? "error" : "done";
+        tk.finished = Date.now();
+        if (finalResult) { tk.result = finalResult; t.results.unshift(finalResult); t.results = t.results.slice(0, 50); }
+        else { tk.error = finalError; }
+      }
+      await writeTasks(t);
+    } catch (e) {}
+  })();
+  return { success: true, task_id: id, status: "running" };
+}
+async function taskStatus(taskId) {
+  const t = await readTasks();
+  const tk = taskId ? (t.tasks || {})[taskId] : null;
+  return { success: true, task: tk || null, recent: t.results || [] };
+}
 // ---- IPC 注册（main.js 调用）----
 let _ipcRegistered = false;
 function registerIpc() {
@@ -343,7 +379,8 @@ function registerIpc() {
   ToolPkg.ipc.on(CHANNEL.editImage, async function (payload) { return editImage(payload || {}); });
   ToolPkg.ipc.on(CHANNEL.listDraws, async function () { return listDraws(); });
   ToolPkg.ipc.on(CHANNEL.sendToChat, async function (payload) { return sendToChat(payload || {}); });
-  ToolPkg.ipc.on("sensenova.start_service", async function (payload) { return startService(payload || {}); });
+  ToolPkg.ipc.on("sensenova.submit_generate", async function (payload) { return submitGenerate(payload || {}); });
+  ToolPkg.ipc.on("sensenova.task_status", async function (payload) { return taskStatus((payload || {}).task_id); });
 }
 
 module.exports = {
@@ -358,5 +395,6 @@ module.exports = {
   loadConfig: loadConfig,
   listDraws: listDraws,
   sendToChat: sendToChat,
-  startService: startService,
+  submitGenerate: submitGenerate,
+  taskStatus: taskStatus,
 };
